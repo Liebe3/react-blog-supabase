@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { AuthState, User } from "../../services/types/auth.types";
 
 import {
+  checkSessionThunk,
   loginThunk,
   logoutThunk,
   registerThunk,
@@ -10,16 +11,38 @@ import {
 
 const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true,
   error: null,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
 
   extraReducers: (builder) => {
+    // Check Session
+    builder.addCase(checkSessionThunk.pending, (state) => {
+      state.loading = true;
+    });
+
+    builder.addCase(
+      checkSessionThunk.fulfilled,
+      (state, action: PayloadAction<User | null>) => {
+        state.user = action.payload;
+        state.loading = false;
+      }
+    );
+
+    builder.addCase(checkSessionThunk.rejected, (state) => {
+      state.user = null;
+      state.loading = false;
+    });
+
     // Register
     builder.addCase(registerThunk.pending, (state) => {
       state.loading = true;
@@ -76,4 +99,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
