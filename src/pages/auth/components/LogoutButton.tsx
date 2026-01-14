@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../../store/hooks";
 import { logoutThunk } from "../../../thunks/authThunks";
+import { ShowError, ShowSucess } from "../../../utils/alert";
 
 const LogoutButton = () => {
   const dispatch = useAppDispatch();
@@ -8,11 +9,17 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      await dispatch(logoutThunk());
+      const result = await dispatch(logoutThunk());
+
+      if (logoutThunk.fulfilled.match(result)) {
+        ShowSucess("Logged out successfuly");
+        navigate("/auth/login", { replace: true });
+      } else {
+        ShowError("Logout failed");
+      }
     } catch (error) {
       console.error(error);
-    } finally {
-      navigate("/auth/login");
+      ShowError("An error occured during logout");
     }
   };
   return (
