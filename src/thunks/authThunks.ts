@@ -7,6 +7,35 @@ import type {
   User,
 } from "../services/types/auth.types";
 
+//  Session Thunk
+export const checkSessionThunk = createAsyncThunk<
+  User | null,
+  void,
+  { rejectValue: string }
+>("auth/checkSession", async (_, { rejectWithValue }) => {
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      return rejectWithValue(error.message);
+    }
+
+    if (!session || !session.user) {
+      return null;
+    }
+
+    return {
+      id: session.user.id,
+      email: session.user.email!,
+    };
+  } catch (error) {
+    return rejectWithValue("Session check failed");
+  }
+});
+
 // Register Thunk
 export const registerThunk = createAsyncThunk<
   User,
