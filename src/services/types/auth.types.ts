@@ -1,22 +1,24 @@
+import type { Profile } from "./profile.type";
+
 export interface User {
   id: string;
-	email: string;
+  email: string;
 }
 
 export interface AuthState {
-	user: User | null;
-	loading: boolean;
-	error: string | null;	
+  user: User | null;
+  loading: boolean;
+  error: string | null;
 }
 
-
 export interface LoginCredentials {
-	email: string;
-	password: string;
+  email: string;
+  password: string;
 }
 
 export interface RegisterCredentials {
-	email: string;
-	password: string;
-	confirmPassword: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  profile: Profile;
 }
