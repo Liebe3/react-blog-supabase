@@ -36,6 +36,7 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
+      ShowError("An error occured during login");
     }
   };
 
