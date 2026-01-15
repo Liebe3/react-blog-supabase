@@ -61,17 +61,6 @@ const BlogForm: React.FC<BlogFormProps> = ({
     }
   };
 
-  const handleReset = () => {
-    if (mode === formModes.Create) {
-      setForm(initialForm);
-    } else if (selectedBlog) {
-      setForm({
-        title: selectedBlog.title || "",
-        content: selectedBlog.content || "",
-      });
-    }
-  };
-
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-6">
