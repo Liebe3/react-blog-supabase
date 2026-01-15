@@ -26,76 +26,71 @@ const authSlice = createSlice({
 
   extraReducers: (builder) => {
     // Check Session
-    builder.addCase(checkSessionThunk.pending, (state) => {
-      state.loading = true;
-    });
+    builder
+      .addCase(checkSessionThunk.pending, (state) => {
+        state.loading = true;
+      })
 
-    builder.addCase(
-      checkSessionThunk.fulfilled,
-      (state, action: PayloadAction<User | null>) => {
+      .addCase(
+        checkSessionThunk.fulfilled,
+        (state, action: PayloadAction<User | null>) => {
+          state.user = action.payload;
+          state.loading = false;
+        }
+      )
+
+      .addCase(checkSessionThunk.rejected, (state) => {
+        state.user = null;
+        state.loading = false;
+      })
+
+      // Register
+      .addCase(registerThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(registerThunk.fulfilled, (state) => {
+        state.user = null
+        state.loading = false;
+      })
+
+      .addCase(registerThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Registration failed";
+      })
+
+      // login
+      .addCase(loginThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(loginThunk.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload;
         state.loading = false;
-      }
-    );
+      })
 
-    builder.addCase(checkSessionThunk.rejected, (state) => {
-      state.user = null;
-      state.loading = false;
-    });
-
-    // Register
-    builder.addCase(registerThunk.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-
-    builder.addCase(
-      registerThunk.fulfilled,
-      (state, action: PayloadAction<User>) => {
-        state.user = action.payload;
+      .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
-      }
-    );
+        state.error = action.payload || "Login failed";
+      })
 
-    builder.addCase(registerThunk.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload || "Registration failed";
-    });
+      // logout
+      .addCase(logoutThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
 
-    // login
-    builder.addCase(loginThunk.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-
-    builder.addCase(
-      loginThunk.fulfilled,
-      (state, action: PayloadAction<User>) => {
-        state.user = action.payload;
+      .addCase(logoutThunk.fulfilled, (state) => {
+        state.user = null;
         state.loading = false;
-      }
-    );
+      })
 
-    builder.addCase(loginThunk.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload || "Login failed";
-    });
-
-    // logout
-    builder.addCase(logoutThunk.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-
-    builder.addCase(logoutThunk.fulfilled, (state) => {
-      state.user = null;
-      state.loading = false;
-    });
-
-    builder.addCase(logoutThunk.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload || "Logout failed";
-    });
+      .addCase(logoutThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Logout failed";
+      });
   },
 });
 
