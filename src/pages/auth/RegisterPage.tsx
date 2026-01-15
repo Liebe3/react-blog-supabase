@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { registerThunk } from "../../thunks/authThunks";
 
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { ShowError } from "../../utils/alert";
 
@@ -23,8 +23,6 @@ const RegisterPage = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const navigate = useNavigate();
 
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -45,7 +43,7 @@ const RegisterPage = () => {
       );
 
       if (registerThunk.fulfilled.match(resultAction)) {
-        navigate("/auth/login");
+        window.location.href = "/auth/login";
       }
     } catch (error) {
       console.error(error);
