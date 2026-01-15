@@ -37,7 +37,6 @@ const BlogRoutes = () => {
         }
       />
 
-      {/* protected routes */}
       <Route
         path="/create"
         element={
@@ -57,6 +56,7 @@ const BlogRoutes = () => {
           </PublicRoute>
         }
       />
+
       <Route
         path="/auth/register"
         element={

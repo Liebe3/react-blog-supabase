@@ -14,7 +14,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth/login" replace />;
-  }
+  } 
   return <div>{children}</div>;
 };
 
