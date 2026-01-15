@@ -27,9 +27,18 @@ export const checkSessionThunk = createAsyncThunk<
       return null;
     }
 
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .single();
+
+    if (profileError) return rejectWithValue(profileError.message);
+
     return {
       id: session.user.id,
       email: session.user.email!,
+      profile: profileData,
     };
   } catch (error) {
     return rejectWithValue("Session check failed");
@@ -38,7 +47,7 @@ export const checkSessionThunk = createAsyncThunk<
 
 // Register Thunk
 export const registerThunk = createAsyncThunk<
-  User,
+  void, // no user returned
   RegisterCredentials,
   { rejectValue: string }
 >(
@@ -53,36 +62,24 @@ export const registerThunk = createAsyncThunk<
 
     const { data, error } = await supabase.auth.signUp({ email, password });
 
-    if (error) {
-      console.error("Supabase signup error:", error);
-      return rejectWithValue(error.message);
-    }
-
-    if (!data.user || !data.user.email) {
+    if (error) return rejectWithValue(error.message);
+    if (!data.user || !data.user.email)
       return rejectWithValue("Registration failed");
-    }
 
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: data.user.id,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-      })
-      .select();
-
-    if (profileError) {
-      return rejectWithValue(profileError.message);
-    }
-
-    return {
+    const { error: profileError } = await supabase.from("profiles").insert({
       id: data.user.id,
-      email: data.user.email!,
-      profile: profileData[0],
-    };
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+    });
+
+    if (profileError) return rejectWithValue(profileError.message);
+
+    // Force sign out
+    await supabase.auth.signOut();
+
+    return;
   }
 );
-
 // Login Thunk
 export const loginThunk = createAsyncThunk<
   User,
@@ -102,10 +99,19 @@ export const loginThunk = createAsyncThunk<
     return rejectWithValue("No user found");
   }
 
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single();
+
+  if (profileError) return rejectWithValue(profileError.message);
+
   // "!" non null operator
   return {
     id: data.user.id,
     email: data.user.email!,
+    profile: profileData,
   };
 });
 
