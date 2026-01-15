@@ -1,17 +1,24 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import HomePage from "./pages/HomePage";
+// App.tsx
+import { BrowserRouter as Router } from "react-router-dom";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { checkSessionThunk } from "./thunks/authThunks";
+import Loading from "./pages/auth/components/Loading";
+import BlogRoutes from "./pages/routes/BlogRoutes";
 
 const App = () => {
+  const dispatch = useAppDispatch();
+  const { loading } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(checkSessionThunk());
+  }, [dispatch]);
+
+  if (loading) return <Loading />;
+
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path={"/auth/register"} element={<RegisterPage />} />
-        <Route path={"/auth/login"} element={<LoginPage />} />
-      </Routes>
+      <BlogRoutes /> 
     </Router>
   );
 };
