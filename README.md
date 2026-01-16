@@ -1,4 +1,4 @@
-# React Blog with Supabase
+#  BlogSpace
 
 A simple blog application built with **React**, **TypeScript**, **Redux**, and **Supabase**.  
 Supports authentication, creating posts, and client-side routing with React Router.
