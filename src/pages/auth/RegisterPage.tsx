@@ -4,15 +4,13 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { registerThunk } from "../../thunks/authThunks";
 
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { ShowError } from "../../utils/alert";
 
 const RegisterPage = () => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.auth);
-
-  const navigate = useNavigate();
 
   const [profile, setProfile] = useState({
     first_name: "",
@@ -46,9 +44,8 @@ const RegisterPage = () => {
 
       // Redirect to login after successful registration
       if (registerThunk.fulfilled.match(resultAction)) {
-        window.location.href = "/auth/login"; 
+        window.location.href = "/auth/login";
       }
-
     } catch (error) {
       console.error(error);
       ShowError("An error occured during registration");
