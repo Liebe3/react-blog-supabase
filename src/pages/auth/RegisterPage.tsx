@@ -44,9 +44,11 @@ const RegisterPage = () => {
         })
       );
 
+      // Redirect to login after successful registration
       if (registerThunk.fulfilled.match(resultAction)) {
-        navigate("/auth/login");
+        window.location.href = "/auth/login"; 
       }
+
     } catch (error) {
       console.error(error);
       ShowError("An error occured during registration");
