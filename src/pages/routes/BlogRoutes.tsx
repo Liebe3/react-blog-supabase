@@ -8,6 +8,7 @@ import CreatePost from "../CreateBlogPage";
 import Home from "../HomePage";
 import Login from "../auth/LoginPage";
 import Register from "../auth/RegisterPage";
+import BlogDetails from "../auth/components/BlogDetails";
 
 const BlogRoutes = () => {
   return (
@@ -45,6 +46,15 @@ const BlogRoutes = () => {
               <CreatePost />
             </Layout>
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/blogs/:id"
+        element={
+          <Layout>
+            <BlogDetails />
+          </Layout>
         }
       />
 
