@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { FiCalendar } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import type { Blog } from "../../../services/types/blog.types";
 import { formatDate } from "../../../utils/alert";
 
@@ -15,12 +16,15 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
       ? content
       : content.substring(0, maxLength) + "...";
 
+  const navigate = useNavigate();
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer border border-gray-200 dark:border-gray-700"
+      onClick={() => navigate(`/blogs/${blog.id}`)}
     >
       <div className="p-6">
         {/* Author Info */}
@@ -53,7 +57,10 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
 
         {/* Read More */}
         <button
-          onClick={() => onReadMore(blog)}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent card click
+            onReadMore(blog);
+          }}
           className="text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1 group cursor-pointer"
         >
           Read more
@@ -63,7 +70,12 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
       </div>
