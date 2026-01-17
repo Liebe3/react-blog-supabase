@@ -14,6 +14,7 @@ export interface Blog {
 export interface BlogState {
   blogs: Blog[];
   userBlogs: Blog[];
+  selectedBlog?: Blog;
   loading: boolean;
   error: string | null;
   currentPage: number;
