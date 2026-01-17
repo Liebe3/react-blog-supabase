@@ -109,6 +109,38 @@ export const fetchUserBlogsThunk = createAsyncThunk<
   }
 });
 
+// Fetch blog by ID
+export const fetchBlogByIdThunk = createAsyncThunk<
+  Blog,
+  string,
+  { rejectValue: string }
+>("blog/fetchBlogById", async (id: string, { rejectWithValue }) => {
+  try {
+    // for blog fetch
+    const { data: blogData, error: blogError } = await supabase
+      .from("blogs")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (blogError) return rejectWithValue(blogError.message);
+    if (!blogData) return rejectWithValue("Blog not found");
+
+    // for author fetch
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name")
+      .eq("id", blogData.author_id)
+      .single();
+
+    if (profileError) return rejectWithValue(profileError.message);
+
+    return { ...blogData, author: profileData } as Blog;
+  } catch (error) {
+    return rejectWithValue((error as Error).message);
+  }
+});
+
 // Create Thunk
 export const createBlogThunk = createAsyncThunk<
   Blog,
