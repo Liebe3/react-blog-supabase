@@ -5,6 +5,7 @@ import type { Blog, BlogState } from "../../services/types/blog.types";
 import {
   createBlogThunk,
   deleteBlogThunk,
+  fetchBlogByIdThunk,
   fetchBlogsThunk,
   fetchUserBlogsThunk,
   updateBlogThunk,
@@ -13,6 +14,7 @@ import {
 const initialState: BlogState = {
   blogs: [],
   userBlogs: [],
+  selectedBlog: undefined,
   loading: false,
   error: null,
   currentPage: 1,
@@ -96,6 +98,26 @@ const blogSlice = createSlice({
         state.loading = false;
       })
 
+      // Fetch single blog
+      .addCase(fetchBlogByIdThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.selectedBlog = undefined;
+      })
+
+      .addCase(
+        fetchBlogByIdThunk.fulfilled,
+        (state, action: PayloadAction<Blog>) => {
+          state.selectedBlog = action.payload;
+          state.loading = false;
+        }
+      )
+
+      .addCase(fetchBlogByIdThunk.rejected, (state, action) => {
+        state.error = action.payload || "Failed to fetch blog";
+        state.loading = false;
+      })
+
       // Create
       .addCase(createBlogThunk.pending, (state) => {
         state.loading = true;
@@ -165,5 +187,11 @@ const blogSlice = createSlice({
   },
 });
 
-export const { clearError, resetBlogs, setCurrentPage, setSearchTerm, clearSearch } = blogSlice.actions;
+export const {
+  clearError,
+  resetBlogs,
+  setCurrentPage,
+  setSearchTerm,
+  clearSearch,
+} = blogSlice.actions;
 export default blogSlice.reducer;
