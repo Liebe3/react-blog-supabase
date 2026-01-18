@@ -7,6 +7,12 @@ import { fetchBlogByIdThunk } from "../../../thunks/blogThunks";
 import { formatDate } from "../../../utils/alert";
 import Loading from "./Loading";
 
+import ImageGallery from "./ImageGallery";
+import ImageLightbox from "./ImageLightbox";
+import ImagesCount from "./ImagesCount";
+
+import { useLightbox } from "../../../store/useLightbox";
+
 const BlogDetails = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
@@ -14,7 +20,7 @@ const BlogDetails = () => {
 
   const BREADCRUMBS = [
     { name: "Home", href: "/" },
-    { name: "Blogs", href: "/blogs" },
+    { name: "Create Post", href: "/create" },
   ];
 
   const {
@@ -22,6 +28,10 @@ const BlogDetails = () => {
     loading,
     error,
   } = useSelector((state: RootState) => state.blog);
+
+  // Set a default empty array so TypeScript knows it exists
+  const images = blog?.images ?? [];
+  const lightbox = useLightbox(images.length);
 
   useEffect(() => {
     if (id) dispatch(fetchBlogByIdThunk(id));
@@ -50,7 +60,7 @@ const BlogDetails = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Breadcrumb Navigation */}
         <nav
           className="flex items-center space-x-2 text-sm text-gray-500 mb-6"
@@ -94,19 +104,42 @@ const BlogDetails = () => {
             </div>
 
             {/* Ttle */}
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-5">
               {blog.title}
             </h1>
           </header>
 
+          {/* Images Gallery */}
+          <ImageGallery
+            images={images}
+            blogTitle={blog.title}
+            onImageClick={lightbox.open}
+          />
+
           {/* Content */}
-          <div className="p-8">
-            <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+          <div className="px-8 py-3 mb-3">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               {blog.content}
             </p>
+
+            {/* Image Count*/}
+            <div className="mt-4">
+              {/* Image Count*/}
+              <ImagesCount images={images} />
+            </div>
           </div>
         </article>
       </div>
+
+      {/* Image Lightbox Modal */}
+
+      <ImageLightbox
+        images={images}
+        index={lightbox.index}
+        onClose={lightbox.close}
+        onNext={lightbox.next}
+        onPrev={lightbox.prev}
+      />
     </div>
   );
 };
