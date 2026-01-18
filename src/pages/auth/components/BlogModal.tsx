@@ -17,28 +17,25 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full p-8 relative"
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full p-8 relative max-h-[90vh] overflow-y-auto"
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white cursor-pointer"
+          className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 transition-colors cursor-pointer"
+          aria-label="Close modal"
         >
           <FiX className="w-5 h-5" />
         </button>
-        {/* Title */}
+
         {title && (
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 pr-8">
             {title}
           </h2>
         )}
 
-        <div className="border-t border-gray-200 mb-5" />
+        <div className="border-t border-gray-200 dark:border-gray-700 mb-5" />
 
-        {/* Content */}
-        <div className="text-gray-700 dark:text-gray-300 max-h-[70vh] overflow-y-auto">
-          {children}
-        </div>
+        {children}
 
         <div className="border-t border-gray-200 mt-5" />
 
