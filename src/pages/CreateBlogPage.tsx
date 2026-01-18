@@ -3,12 +3,16 @@ import { useEffect, useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import type {
-  Blog,
   CreateBlogInput,
   UpdateBlogInput,
 } from "../services/types/blog.types";
+import type { BlogWithImages } from "../services/types/blogimages.types";
 import type { AppDispatch, RootState } from "../store";
-import { setCurrentPage, setSearchTerm, clearSearch } from "../store/slices/blogSlice";
+import {
+  clearSearch,
+  setCurrentPage,
+  setSearchTerm,
+} from "../store/slices/blogSlice";
 import {
   createBlogThunk,
   deleteBlogThunk,
@@ -24,16 +28,24 @@ import Loading from "./auth/components/Loading";
 
 const CreateBlogPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { userBlogs, loading, error, currentPage, pageSize, totalBlogs, searchTerm } =
-    useSelector((state: RootState) => state.blog);
+  const {
+    userBlogs,
+    loading,
+    error,
+    currentPage,
+    pageSize,
+    totalBlogs,
+    searchTerm,
+  } = useSelector((state: RootState) => state.blog);
 
   const totalPages = Math.ceil(totalBlogs / pageSize);
 
   // Modal state
-  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [selectedBlog, setSelectedBlog] = useState<BlogWithImages | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [mode, setMode] = useState<"create" | "update">("create");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Local search state for input
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
@@ -41,11 +53,13 @@ const CreateBlogPage = () => {
 
   // Fetch blogs on mount and when page or search changes
   useEffect(() => {
-    dispatch(fetchUserBlogsThunk({ 
-      page: currentPage, 
-      pageSize,
-      search: debouncedSearch 
-    }));
+    dispatch(
+      fetchUserBlogsThunk({
+        page: currentPage,
+        pageSize,
+        search: debouncedSearch,
+      }),
+    );
   }, [dispatch, currentPage, pageSize, debouncedSearch]);
 
   // Debounce search input
@@ -83,14 +97,14 @@ const CreateBlogPage = () => {
   };
 
   // Open modal for editing blog
-  const handleEditBlog = (blog: Blog) => {
+  const handleEditBlog = (blog: BlogWithImages) => {
     setSelectedBlog(blog);
     setMode("update");
     setIsModalOpen(true);
   };
 
   // Open modal for viewing blog
-  const handleViewBlog = (blog: Blog) => {
+  const handleViewBlog = (blog: BlogWithImages) => {
     setSelectedBlog(blog);
     setIsViewModalOpen(true);
   };
@@ -114,7 +128,13 @@ const CreateBlogPage = () => {
 
   // Delete blog
   const handleDelete = (id: string) => {
-    ConfirmDelete(dispatch, deleteBlogThunk, id, "Blog deleted successfully");
+    ConfirmDelete(
+      dispatch,
+      deleteBlogThunk,
+      id,
+      "Blog deleted successfully",
+      setIsDeleting,
+    );
   };
 
   // Close modal
@@ -138,6 +158,8 @@ const CreateBlogPage = () => {
   if (loading && userBlogs.length === 0) {
     return <Loading />;
   }
+
+  if (isDeleting) return <Loading />;
 
   if (error && userBlogs.length === 0) {
     return (
@@ -230,7 +252,6 @@ const CreateBlogPage = () => {
             blog={selectedBlog}
             isOpen={isViewModalOpen}
             onClose={handleCloseViewModal}
-            onEdit={handleEditBlog}
           />
         )}
       </div>
