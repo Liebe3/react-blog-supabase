@@ -1,3 +1,5 @@
+import type { BlogWithImages } from "./blogimages.types";
+
 export interface Blog {
   id: string;
   title: string;
@@ -12,9 +14,9 @@ export interface Blog {
 }
 
 export interface BlogState {
-  blogs: Blog[];
-  userBlogs: Blog[];
-  selectedBlog?: Blog;
+  blogs: BlogWithImages[];
+  userBlogs: BlogWithImages[];
+  selectedBlog?: BlogWithImages;
   loading: boolean;
   error: string | null;
   currentPage: number;
@@ -26,10 +28,13 @@ export interface BlogState {
 export interface CreateBlogInput {
   title: string;
   content: string;
+  images?: File[];
 }
 
 export interface UpdateBlogInput {
   id: string;
   title: string;
   content: string;
+  images?: File[];
+  removedImageIds?: string[];
 }
