@@ -8,14 +8,15 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 
-import type { Blog } from "../../../services/types/blog.types";
 import { formatDate } from "../../../utils/alert";
 
+import type { BlogWithImages } from "../../../services/types/blogimages.types";
+
 interface BlogTableProps {
-  blogs: Blog[];
-  onEdit: (blog: Blog) => void;
+  blogs: BlogWithImages[];
+  onEdit: (blog: BlogWithImages) => void;
   onDelete: (id: string) => void;
-  onView: (blog: Blog) => void;
+  onView: (blog: BlogWithImages) => void;
   handleOpenCreate: () => void;
   hasActiveFilters: boolean;
   clearFilters: () => void;
@@ -131,6 +132,9 @@ const BlogTable: React.FC<BlogTableProps> = ({
                   Content
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-1/6 min-w-[120px]">
+                  Image
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-1/6 min-w-[120px]">
                   Created
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 w-[140px]">
@@ -139,62 +143,78 @@ const BlogTable: React.FC<BlogTableProps> = ({
               </tr>
             </thead>
             <tbody>
-              {blogs.map((blog, index) => (
-                <motion.tr
-                  key={blog.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.01 }}
-                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
-                >
-                  <td className="py-4 px-6">
-                    <div className="font-semibold text-gray-900 dark:text-white wrap-break-words">
-                      {blog.title}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-gray-600 dark:text-gray-400 text-sm wrap-break-words line-clamp-2">
-                      {truncateText(blog.content, 200)}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="text-gray-600 dark:text-gray-400 text-sm whitespace-nowrap">
-                      {formatDate(blog.created_at)}
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-1 flex-nowrap">
-                      <motion.button
-                        onClick={() => onView(blog)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer shrink-0"
-                        title="View Blog"
-                      >
-                        <FiEye className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
-                        onClick={() => onEdit(blog)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer flex-shrink-0"
-                        title="Edit Blog"
-                      >
-                        <FiEdit3 className="w-3.5 h-3.5" />
-                      </motion.button>
-                      <motion.button
-                        onClick={() => onDelete(blog.id)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer flex-shrink-0"
-                        title="Delete Blog"
-                      >
-                        <FiTrash2 className="w-3.5 h-3.5" />
-                      </motion.button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
+              {blogs.map((blog, index) => {
+                return (
+                  <motion.tr
+                    key={blog.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.01 }}
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+                  >
+                    <td className="py-4 px-6">
+                      <div className="font-semibold text-gray-900 dark:text-white wrap-break-words">
+                        {blog.title}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="text-gray-600 dark:text-gray-400 text-sm wrap-break-words line-clamp-2">
+                        {truncateText(blog.content, 200)}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="text-gray-600 dark:text-gray-400 text-sm wrap-break-words line-clamp-2">
+                        {blog.images && blog.images.length > 0 ? (
+                          <img
+                            src={blog.images[0].image_url}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500 text-sm">
+                            No image
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="text-gray-600 dark:text-gray-400 text-sm whitespace-nowrap">
+                        {formatDate(blog.created_at)}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-1 flex-nowrap">
+                        <motion.button
+                          onClick={() => onView(blog)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer shrink-0"
+                          title="View Blog"
+                        >
+                          <FiEye className="w-3.5 h-3.5" />
+                        </motion.button>
+                        <motion.button
+                          onClick={() => onEdit(blog)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer flex-shrink-0"
+                          title="Edit Blog"
+                        >
+                          <FiEdit3 className="w-3.5 h-3.5" />
+                        </motion.button>
+                        <motion.button
+                          onClick={() => onDelete(blog.id)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-colors duration-200 shadow-sm cursor-pointer flex-shrink-0"
+                          title="Delete Blog"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </motion.button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
