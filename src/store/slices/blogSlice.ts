@@ -1,6 +1,7 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import type { Blog, BlogState } from "../../services/types/blog.types";
+import type { BlogState } from "../../services/types/blog.types";
+import type { BlogWithImages } from "../../services/types/blogimages.types";
 
 import {
   createBlogThunk,
@@ -67,10 +68,10 @@ const blogSlice = createSlice({
 
       .addCase(
         fetchBlogsThunk.fulfilled,
-        (state, action: PayloadAction<Blog[]>) => {
+        (state, action: PayloadAction<BlogWithImages[]>) => {
           state.blogs = action.payload;
           state.loading = false;
-        }
+        },
       )
 
       .addCase(fetchBlogsThunk.rejected, (state, action) => {
@@ -78,7 +79,7 @@ const blogSlice = createSlice({
         state.loading = false;
       })
 
-      // Fetch user blogs (dashboard)
+      // Fetch user blogs
       .addCase(fetchUserBlogsThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -86,11 +87,14 @@ const blogSlice = createSlice({
 
       .addCase(
         fetchUserBlogsThunk.fulfilled,
-        (state, action: PayloadAction<{ blogs: Blog[]; total: number }>) => {
+        (
+          state,
+          action: PayloadAction<{ blogs: BlogWithImages[]; total: number }>,
+        ) => {
           state.userBlogs = action.payload.blogs;
           state.totalBlogs = action.payload.total;
           state.loading = false;
-        }
+        },
       )
 
       .addCase(fetchUserBlogsThunk.rejected, (state, action) => {
@@ -107,10 +111,10 @@ const blogSlice = createSlice({
 
       .addCase(
         fetchBlogByIdThunk.fulfilled,
-        (state, action: PayloadAction<Blog>) => {
+        (state, action: PayloadAction<BlogWithImages>) => {
           state.selectedBlog = action.payload;
           state.loading = false;
-        }
+        },
       )
 
       .addCase(fetchBlogByIdThunk.rejected, (state, action) => {
@@ -126,12 +130,12 @@ const blogSlice = createSlice({
 
       .addCase(
         createBlogThunk.fulfilled,
-        (state, action: PayloadAction<Blog>) => {
+        (state, action: PayloadAction<BlogWithImages>) => {
           state.blogs.unshift(action.payload);
           state.loading = false;
           // Reset to page 1 after creating
           state.currentPage = 1;
-        }
+        },
       )
 
       .addCase(createBlogThunk.rejected, (state, action) => {
@@ -147,16 +151,16 @@ const blogSlice = createSlice({
 
       .addCase(
         updateBlogThunk.fulfilled,
-        (state, action: PayloadAction<Blog>) => {
+        (state, action: PayloadAction<BlogWithImages>) => {
           const index = state.blogs.findIndex(
-            (blog) => blog.id === action.payload.id
+            (blog) => blog.id === action.payload.id,
           );
 
           if (index !== -1) {
             state.blogs[index] = action.payload;
           }
           state.loading = false;
-        }
+        },
       )
 
       .addCase(updateBlogThunk.rejected, (state, action) => {
@@ -174,10 +178,10 @@ const blogSlice = createSlice({
         deleteBlogThunk.fulfilled,
         (state, action: PayloadAction<string>) => {
           state.blogs = state.blogs.filter(
-            (blog) => blog.id !== action.payload
+            (blog) => blog.id !== action.payload,
           );
           state.loading = false;
-        }
+        },
       )
 
       .addCase(deleteBlogThunk.rejected, (state, action) => {
