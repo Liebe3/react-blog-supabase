@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 import { FiCalendar } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import type { Blog } from "../../../services/types/blog.types";
+import type { BlogWithImages } from "../../../services/types/blogimages.types";
 import { formatDate } from "../../../utils/alert";
+import ImagesCount from "./ImagesCount";
 
 interface BlogCardProps {
-  blog: Blog;
+  blog: BlogWithImages;
   index: number;
-  onReadMore: (blog: Blog) => void;
+  onReadMore: (blog: BlogWithImages) => void;
 }
 
 const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
@@ -17,6 +18,13 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
       : content.substring(0, maxLength) + "...";
 
   const navigate = useNavigate();
+
+  // Set a default empty array so TypeScript knows it exists
+  const images = blog.images ?? [];
+
+  // Display max 3 images
+  const displayedImages = images.slice(0, 3);
+  const remainingCount = images.length - displayedImages.length;
 
   return (
     <motion.article
@@ -50,10 +58,37 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
           {blog.title}
         </h2>
 
+        {/* Images Gallery */}
+        {displayedImages.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {displayedImages.map((image, i) => (
+              <div
+                key={image.id}
+                className="relative overflow-hidden rounded-lg h-36"
+              >
+                <img
+                  src={image.image_url}
+                  alt={`${blog.title} image ${i + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+                {/* +N overlay on the last image */}
+                {i === displayedImages.length - 1 && remainingCount > 0 && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg rounded-lg">
+                    +{remainingCount}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Content Preview */}
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+        <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 mt-4">
           {truncateContent(blog.content)}
         </p>
+
+        {/* Image Count Badge */}
+        <ImagesCount images={blog.images ?? []} />
 
         {/* Read More */}
         <button
@@ -61,7 +96,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, index, onReadMore }) => {
             e.stopPropagation(); // Prevent card click
             onReadMore(blog);
           }}
-          className="text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1 group cursor-pointer"
+          className="text-emerald-600 mt-3 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1 group cursor-pointer"
         >
           Read more
           <svg
