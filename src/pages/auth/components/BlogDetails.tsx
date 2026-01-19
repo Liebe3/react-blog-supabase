@@ -7,6 +7,7 @@ import { fetchBlogByIdThunk } from "../../../thunks/blogThunks";
 import { formatDate } from "../../../utils/alert";
 import Loading from "./Loading";
 
+import CommentSection from "./CommentSection";
 import ImageGallery from "./ImageGallery";
 import ImageLightbox from "./ImageLightbox";
 import ImagesCount from "./ImagesCount";
@@ -128,11 +129,13 @@ const BlogDetails = () => {
               <ImagesCount images={images} />
             </div>
           </div>
+
+          {/* Comment Section */}
+          {id && <CommentSection blogId={id} />}
         </article>
       </div>
 
       {/* Image Lightbox Modal */}
-
       <ImageLightbox
         images={images}
         index={lightbox.index}
