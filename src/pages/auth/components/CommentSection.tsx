@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { FiMessageSquare } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../../store";
+import { useRealtimeComments } from "../../../store/useRealtimeComments";
 import {
   deleteCommentThunk,
   fetchBlogCommentsThunk,
@@ -20,7 +21,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
   const { comments, loading, error } = useSelector(
     (state: RootState) => state.comment,
   );
+
   const { user } = useSelector((state: RootState) => state.auth);
+
+  useRealtimeComments(blogId);
 
   useEffect(() => {
     dispatch(fetchBlogCommentsThunk(blogId));
@@ -35,13 +39,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
     );
   };
 
-  const handleEditComment = () => {
-    dispatch(fetchBlogCommentsThunk(blogId));
-  };
+  // const handleEditComment = () => {
+  //   dispatch(fetchBlogCommentsThunk(blogId));
+  // };
 
-  const handleRefreshComments = () => {
-    dispatch(fetchBlogCommentsThunk(blogId));
-  };
+  // const handleRefreshComments = () => {
+  //   dispatch(fetchBlogCommentsThunk(blogId));
+  // };
 
   return (
     <section className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
@@ -55,7 +59,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
 
       {/* Comment Form */}
       <div className="mb-8 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-        <CommentForm blogId={blogId} onSubmitSuccess={handleRefreshComments} />
+        <CommentForm blogId={blogId} />
       </div>
 
       {/* Comments List */}
@@ -79,9 +83,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ blogId }) => {
               key={comment.id}
               comment={comment}
               blogId={blogId}
-              onReplyPosted={handleRefreshComments}
               onDelete={handleDeleteComment}
-              onEdit={handleEditComment}
               currentUserId={user?.id}
             />
           ))
