@@ -9,8 +9,8 @@ import type {
 import type { RootState } from "../store";
 import {
   deleteCommentAndImages,
+  deleteCommentImage,
   uploadCommentImage,
-  deleteCommentImage
 } from "../utils/commentImageUpload";
 
 //fetch all comments thunk
@@ -190,7 +190,6 @@ export const createCommentThunk = createAsyncThunk<
   },
 );
 
-
 // Update comment thunk
 export const updateCommentThunk = createAsyncThunk<
   CommentWithImage,
@@ -285,7 +284,7 @@ export const updateCommentThunk = createAsyncThunk<
     } catch (error) {
       return rejectWithValue((error as Error).message);
     }
-  }
+  },
 );
 
 // Delete comment thunk
@@ -293,43 +292,53 @@ export const deleteCommentThunk = createAsyncThunk<
   string,
   string,
   { rejectValue: string; state: RootState }
->(
-  "comment/deleteComment",
-  async (commentId, { rejectWithValue, dispatch }) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+>("comment/deleteComment", async (commentId, { rejectWithValue, dispatch }) => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (!user) return rejectWithValue("Not authenticated");
+    if (!user) return rejectWithValue("Not authenticated");
 
-      const { data: commentData, error: fetchError } = await supabase
-        .from("blog_comments")
-        .select("blog_id, user_id")
-        .eq("id", commentId)
-        .single();
+    const { data: commentData, error: fetchError } = await supabase
+      .from("blog_comments")
+      .select("blog_id, user_id")
+      .eq("id", commentId)
+      .single();
 
-      if (fetchError) return rejectWithValue(fetchError.message);
-      if (!commentData) return rejectWithValue("Comment not found");
-      if (commentData.user_id !== user.id)
-        return rejectWithValue("Not authorized");
+    if (fetchError) return rejectWithValue(fetchError.message);
+    if (!commentData) return rejectWithValue("Comment not found");
+    if (commentData.user_id !== user.id)
+      return rejectWithValue("Not authorized");
 
-      // Delete all images recursively
-      await deleteCommentAndImages(commentId);
+    // comment that has replied cant delete
+    const { data: replies, error: repliesError } = await supabase
+      .from("blog_comments")
+      .select("id")
+      .eq("parent_comment_id", commentId)
+      .limit(1);
 
-      // Delete parent comment (cascade deletes replies in DB)
-      const { error: deleteError } = await supabase
-        .from("blog_comments")
-        .delete()
-        .eq("id", commentId);
+    if (repliesError) return rejectWithValue(repliesError.message);
 
-      if (deleteError) return rejectWithValue(deleteError.message);
-
-      dispatch(fetchBlogCommentsThunk(commentData.blog_id));
-
-      return commentId;
-    } catch (error) {
-      return rejectWithValue((error as Error).message);
+    if (replies && replies.length > 0) {
+      return rejectWithValue("Cannot delete a comment that has replies");
     }
+
+    // Delete all images recursively
+    await deleteCommentAndImages(commentId);
+
+    // Delete parent comment (cascade deletes replies in DB)
+    const { error: deleteError } = await supabase
+      .from("blog_comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (deleteError) return rejectWithValue(deleteError.message);
+
+    dispatch(fetchBlogCommentsThunk(commentData.blog_id));
+
+    return commentId;
+  } catch (error) {
+    return rejectWithValue((error as Error).message);
   }
-);
+});
