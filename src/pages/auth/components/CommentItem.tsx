@@ -28,6 +28,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const isAuthor = currentUserId === comment.user_id;
+  const hasReplies = comment.replies && comment.replies.length > 0;
 
   return (
     <div className="space-y-4">
@@ -63,9 +64,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 <FiEdit2 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => onDelete?.(comment.id)}
-                className="text-gray-400 hover:text-red-500 transition cursor-pointer p-1"
+                onClick={() => {
+                  onDelete?.(comment.id);
+                }}
+                disabled={hasReplies} 
+                className={`p-1 transition ${
+                  hasReplies
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-400 hover:text-red-500 cursor-pointer"
+                }`}
                 aria-label="Delete comment"
+                title={
+                  hasReplies
+                    ? "Cannot delete comment with replies"
+                    : "Delete comment"
+                }
               >
                 <FiTrash2 className="w-4 h-4" />
               </button>
