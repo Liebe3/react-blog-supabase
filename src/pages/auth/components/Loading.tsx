@@ -24,7 +24,7 @@ function Loading() {
   return (
     <div className="min-h-screen w-full flex">
       <motion.div
-        className="container"
+        className="w-full flex justify-center items-center gap-5"
         variants={containerVariants}
         initial="hidden"
         animate="animate"
@@ -42,13 +42,6 @@ function StyleSheet() {
   return (
     <style>
       {`
-        .container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 20px;
-        }
-
         .dot {
           width: 20px;
           height: 20px;
