@@ -22,32 +22,29 @@ export const useRealtimeComments = (blogId: string) => {
         .on(
           "postgres_changes",
           {
-            event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
+            event: "*", 
             schema: "public",
             table: "blog_comments",
             filter: `blog_id=eq.${blogId}`,
           },
           () => {
-            // console.log("Comment change detected:", payload);
             refreshComments();
           },
         )
-        // .on(
-        //   "postgres_changes",
-        //   {
-        //     event: "*",
-        //     schema: "public",
-        //     table: "comment_images",
-        //   },
-        //   (payload) => {
-        //     console.log("Comment image change detected:", payload);
-        //     // Refresh to get updated images
-        //     refreshComments();
-        //   },
-        // )
-        .subscribe(() => {
-          // console.log("Subscription status:", status);
-        });
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "comment_images",
+            filter: `blog_id=eq.${blogId}`,
+          },
+          () => {
+            // Refresh to get updated images
+            refreshComments();
+          },
+        )
+        .subscribe();
     };
 
     setupRealtimeSubscription();
