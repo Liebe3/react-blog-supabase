@@ -39,6 +39,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isImageRemovedByUser, setIsImageRemovedByUser] = useState(false);
 
   // Initialize form with editing comment data
   useEffect(() => {
@@ -47,10 +48,12 @@ const CommentForm: React.FC<CommentFormProps> = ({
       if (editingComment.image) {
         setPreviewUrl(editingComment.image.image_url);
       }
+      setIsImageRemovedByUser(false);
     } else {
       setContent("");
       setSelectedImage(null);
       setPreviewUrl("");
+      setIsImageRemovedByUser(false);
     }
   }, [editingComment]);
 
@@ -85,6 +88,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setPreviewUrl("");
+    setIsImageRemovedByUser(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,8 +100,8 @@ const CommentForm: React.FC<CommentFormProps> = ({
       return;
     }
 
-    // error if space only
-    if (!content.trim() && !selectedImage) {
+    // error if no content and no image
+    if (!content.trim() && !previewUrl) {
       ShowError("Please enter a comment or upload an image");
       return;
     }
@@ -109,7 +113,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
           id: editingComment.id,
           content: content.trim() || null,
           image: selectedImage || undefined,
-          removeImage: !!previewUrl && !selectedImage,
+          removeImage: isImageRemovedByUser,
         };
 
         await dispatch(updateCommentThunk(updateData)).unwrap();
@@ -130,6 +134,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
       setContent("");
       setSelectedImage(null);
       setPreviewUrl("");
+      setIsImageRemovedByUser(false);
       onSubmitSuccess?.();
     } catch (error) {
       ShowError((error as string) || "Failed to save comment");
@@ -182,30 +187,38 @@ const CommentForm: React.FC<CommentFormProps> = ({
             alt="Preview"
             className="w-full h-40 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
           />
-          <button
-            type="button"
-            onClick={handleRemoveImage}
-            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition cursor-pointer"
-            aria-label="Remove image"
-          >
-            <FiX className="w-4 h-4" />
-          </button>
+          {!editingComment?.image && (
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition cursor-pointer"
+              aria-label="Remove image"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          )}
         </div>
       )}
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <label className="cursor-pointer">
+        <label className={`cursor-pointer ${
+          editingComment?.image ? "opacity-50 cursor-not-allowed" : ""
+        }`}>
           <input
             type="file"
             accept="image/*"
             onChange={handleImageSelect}
             className="hidden"
-            disabled={loading}
+            disabled={loading || !!editingComment?.image}
           />
-          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition text-sm font-medium">
+          <div className={`flex items-center gap-2 transition text-sm font-medium ${
+            editingComment?.image
+              ? "text-gray-400 dark:text-gray-500"
+              : "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300"
+          }`}>
             <FiImage className="w-4 h-4" />
-            <span>Add Image</span>
+            <span>{editingComment?.image ? "Image cannot be changed" : "Add Image"}</span>
           </div>
         </label>
 
