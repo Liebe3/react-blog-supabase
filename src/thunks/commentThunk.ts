@@ -229,6 +229,20 @@ export const updateCommentThunk = createAsyncThunk<
         return rejectWithValue("Not authorized to update this comment");
       }
 
+      // Validate: at least content or image must remain after update
+      const { data: currentImageData } = await supabase
+        .from("comment_images")
+        .select("*")
+        .eq("comment_id", id)
+        .maybeSingle();
+
+      const hasCurrentImage = !!currentImageData;
+      const willHaveImage = image || (hasCurrentImage && !removeImage);
+
+      if (!content && !willHaveImage) {
+        return rejectWithValue("Comment must have either content or an image");
+      }
+
       // Update comment content
       const { data, error } = await supabase
         .from("blog_comments")
@@ -239,25 +253,39 @@ export const updateCommentThunk = createAsyncThunk<
 
       if (error) return rejectWithValue(error.message);
 
-      // Handle image operations
-      if (removeImage) {
-        // Remove existing image
-        try {
-          await deleteCommentImage(id);
-        } catch (imageError) {
-          console.error("Failed to delete image:", imageError);
+      // Handle image operations - be very explicit
+      // If comment already has an image, don't allow image updates (only text updates)
+      let imageOperationPerformed = false;
+
+      if (!hasCurrentImage) {
+        // Case 1: User wants to remove the image (and not upload a new one)
+        if (removeImage === true && !image) {
+          try {
+            await deleteCommentImage(id);
+            imageOperationPerformed = true;
+          } catch (imageError) {
+            console.error("Failed to delete image:", imageError);
+          }
+        }
+
+        // Case 2: User wants to upload a new image (only if no current image exists)
+        if (image) {
+          try {
+            await uploadCommentImage(id, image);
+            imageOperationPerformed = true;
+          } catch (imageError) {
+            console.error("Failed to upload new image:", imageError);
+          }
         }
       }
 
-      if (image) {
-        // Upload new image (this will replace existing one if any)
-        try {
-          await deleteCommentImage(id); // Remove old image first
-          await uploadCommentImage(id, image);
-        } catch (imageError) {
-          console.error("Failed to upload new image:", imageError);
-        }
+      // Only wait if we performed an image operation
+      if (imageOperationPerformed) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
+
+      // Refresh comments for the blog
+      await dispatch(fetchBlogCommentsThunk(existingComment.blog_id));
 
       // Fetch the complete comment with image and author
       const { data: profileData } = await supabase
@@ -270,10 +298,7 @@ export const updateCommentThunk = createAsyncThunk<
         .from("comment_images")
         .select("*")
         .eq("comment_id", id)
-        .single();
-
-      // Refresh comments for the blog
-      dispatch(fetchBlogCommentsThunk(existingComment.blog_id));
+        .maybeSingle();
 
       return {
         ...data,
