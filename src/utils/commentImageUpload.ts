@@ -6,14 +6,22 @@ export const uploadCommentImage = async (
   imageFile: File,
 ): Promise<string> => {
   try {
+    // First, get the blog_id from the comment
+    const { data: commentData, error: commentError } = await supabase
+      .from("blog_comments")
+      .select("blog_id")
+      .eq("id", commentId)
+      .single();
+
+    if (commentError) throw commentError;
+
     const fileExt = imageFile.name.split(".").pop();
     const fileName = `${commentId}/${Date.now()}-${Math.random()
       .toString(36)
       .substring(7)}.${fileExt}`;
 
-    // Upload to Supabase storage
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("comment_images") // bucket name
+      .from("comment_images")
       .upload(fileName, imageFile, {
         contentType: imageFile.type,
         cacheControl: "3600",
@@ -25,22 +33,21 @@ export const uploadCommentImage = async (
       throw uploadError;
     }
 
-    // Get public URL
     const {
       data: { publicUrl },
     } = supabase.storage.from("comment_images").getPublicUrl(uploadData.path);
 
-    // Insert into comment_images table
+    // Insert with blog_id
     const { error: databaseError } = await supabase
       .from("comment_images")
       .insert({
         comment_id: commentId,
         image_url: publicUrl,
+        blog_id: commentData.blog_id, // Add this
       });
 
     if (databaseError) {
       console.error("Database insert error:", databaseError);
-      // Delete uploaded file if database insert fails
       await supabase.storage.from("comment_images").remove([uploadData.path]);
       throw databaseError;
     }
@@ -52,7 +59,6 @@ export const uploadCommentImage = async (
   }
 };
 
-
 // Delete comment image from storage and database
 export const deleteCommentImage = async (commentId: string): Promise<void> => {
   try {
@@ -61,7 +67,7 @@ export const deleteCommentImage = async (commentId: string): Promise<void> => {
       .from("comment_images")
       .select("image_url")
       .eq("comment_id", commentId)
-      .single();
+      .maybeSingle();
 
     if (fetchError && fetchError.code !== "PGRST116") {
       // PGRST116 = no rows returned, which is fine
@@ -114,4 +120,3 @@ export const deleteCommentAndImages = async (commentId: string) => {
   // Delete this comment's image
   await deleteCommentImage(commentId);
 };
-
